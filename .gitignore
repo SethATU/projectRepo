@@ -1,0 +1,3 @@
+server/.venv
+server/.vscode
+esp32/sensors/secrets.h

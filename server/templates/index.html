@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='style-s.css')}}">
+  <title>Home</title>
+</head>
+  <body>
+    <div class ="container-1">
+      <div class="header"><H1>Secure System WebServer</H1></div>
+      
+      <div class="container-2">
+        <div class="item item-1"><a href="{{ url_for('data') }}" target="_self"><button>Data</button></a></div>
+        <div class="item item-2"><a href="{{ url_for('alarm') }}" target="_self"><button>Alarm</button></a></div>  
+        <div class="item item-3"><a href="{{ url_for('location') }}" target="_self"><button>Location</button></a></div>
+        <div class="item item-4"><a href="{{ url_for('stats') }}" target="_self"><button>Stats</button></a></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

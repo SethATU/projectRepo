@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='location-s.css')}}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script src="{{url_for('static', filename='location-j.js')}}"></script>
+  <title>Location</title>
+</head>
+  <body>
+    <div class ="container-1">
+      <div class="header"><H1>Secure System</H1></div>
+      <div class="quick quick-1"><a href="{{ url_for('home')}}" target="_self">Home</a></div>
+      <div class="quick quick-2"><a href="{{ url_for('data')}}" target="_self">Data</a></div>
+      <div class="quick quick-3"><a href="{{ url_for('alarm')}}" target="_self">Alarm</a></div>
+      <div class="quick quick-4"><a href="{{ url_for('location')}}" target="_self">Location</a></div>
+      <div class="quick quick-5"><a href="{{ url_for('stats')}}" target="_self">Stats</a></div>
+    </div>
+    
+    <div class="container-2">
+      <div class="header"><H1>Location</H1></div>
+        
+      <div class="container-3">
+        <div id="map"></div>
+      </div>
+    </div>
+    
+  </body>
+</html>

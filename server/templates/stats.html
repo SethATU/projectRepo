@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='stats-s.css')}}">
+  <title>Stats</title>
+</head>
+  <body>
+    <div class ="container-1">
+      <div class="header"><H1>Secure System</H1></div>
+      <div class="quick quick-1"><a href="{{ url_for('home')}}" target="_self">Home</a></div>
+      <div class="quick quick-2"><a href="{{ url_for('data')}}" target="_self">Data</a></div>
+      <div class="quick quick-3"><a href="{{ url_for('alarm')}}" target="_self">Alarm</a></div>
+      <div class="quick quick-4"><a href="{{ url_for('location')}}" target="_self">Location</a></div>
+      <div class="quick quick-5"><a href="{{ url_for('stats')}}" target="_self">Stats</a></div>
+    </div>
+    
+    <div class="container-2">
+      <div class="header"><H1>Stats</H1></div>
+        
+      <div class="container-3">
+        <div><iframe class="stat" src="https://thingspeak.com/channels/3307494/charts/1?bgcolor=%23000000&color=%2300ff00&dynamic=true&results=60&title=Distance&type=line&xaxis=Time&yaxis=Distance+%28CM%29"></iframe></div>
+        <div><iframe class="stat" src="https://thingspeak.com/channels/3307494/charts/4?bgcolor=%23000000&color=%2300ff00&dynamic=true&results=60&title=Moisture&type=line&xaxis=Time&yaxis=Humidity"></iframe></div>
+        <div><iframe class="stat" src="https://thingspeak.com/channels/3307494/charts/2?bgcolor=%23000000&color=%2300ff00&dynamic=true&results=60&title=Temperature&type=line&xaxis=Time&yaxis=Temp+%28C%29"></iframe></div>
+        <div><iframe class="stat" src="https://thingspeak.com/channels/3307494/charts/3?bgcolor=%23000000&color=%2300ff00&dynamic=true&results=60&title=Temperature&type=line&xaxis=Time&yaxis=Temp+%28F%29"></iframe></div>
+      </div>
+    </div>
+    
+  </body>
+</html>

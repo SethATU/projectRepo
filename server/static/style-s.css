@@ -1,0 +1,47 @@
+body {
+    margin: 0;             
+    width: 99%;
+    justify-self: center;
+    background-image: url(https://i.pinimg.com/originals/c5/9a/d2/c59ad2bd4ad2fbacd04017debc679ddb.gif);
+}
+
+.header {
+    display: flex;
+    justify-content: center; 
+    align-items: center;  
+    color: lime;   
+    text-align: center;
+}
+
+.container-1 {   
+    margin-top: 15%;
+    border: 5px solid lime;
+    border-radius: 25px;
+    background-color: black;
+    font-size: 30px;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.container-2 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+button {
+    border:solid 3px lime;
+    border-radius: 50px;
+    background-color: #000000;
+    color: lime;
+    width: 250px;
+    height: 100px;
+    font-size: xx-large;
+    margin-bottom: 20%;
+    transition: 0.3s ease; 
+}
+
+button:hover {
+    cursor: pointer;
+    transform: translateY(-10px); 
+}
