@@ -1,21 +1,25 @@
 #include <esp_now.h>
 #include <WiFi.h>
+#include <PubSubClient.h>
 
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
-//#define MQTT_HOST "broker.emqx.io"
-//#define MQTT_PORT 8084
-//#define MQTT_PUB_DIST "seth/esp32/distance"
-//#define MQTT_PUB_HUMI "seth/esp32/humidity"
-//#define MQTT_PUB_CELC "seth/esp32/celcius"
-//#define MQTT_PUB_FARA "seth/esp32/farenheight"
-//#define MQTT_PUB_LATT "seth/esp32/latitude"
-//#define MQTT_PUB_LONG "seth/esp32/longitude"
-//#define MQTT_PUB_MOVE "seth/esp32/movement"
-//#define MQTT_PUB_ALAR "seth/esp32/alarm"
-//#define MQTT_PUB_USER "seth/esp32/user"
-//#define MQTT_PUB_KEY "seth/esp32/key"
+#define WIFI_SSID "Backup"
+#define WIFI_PASSWORD "nonono12345"
 #define BUZZ 32
+#define MQTT_HOST "broker.emqx.io"
+#define MQTT_PORT 1883
+#define MQTT_USERNAME "emqx"
+#define MQTT_PASSWORD "public"
+
+#define MQTT_PUB_DIST "seth/esp32/distance"
+#define MQTT_PUB_HUMI "seth/esp32/humidity"
+#define MQTT_PUB_CELC "seth/esp32/celcius"
+#define MQTT_PUB_FARA "seth/esp32/farenheight"
+#define MQTT_PUB_LATT "seth/esp32/latitude"
+#define MQTT_PUB_LONG "seth/esp32/longitude"
+#define MQTT_PUB_MOVE "seth/esp32/movement"
+#define MQTT_PUB_ALAR "seth/esp32/alarm"
+#define MQTT_PUB_USER "seth/esp32/user"
+#define MQTT_PUB_KEY "seth/esp32/key"
 
 typedef struct struct_message1 {
   float dist;
@@ -46,6 +50,9 @@ String alarmString = "Error";
 String userString = "Error";
 String keyString = "Error";
 
+WiFiClient espClient;
+PubSubClient mqtt_client(espClient);
+
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
   if(len == sizeof(struct_message1)) {
     memcpy(&incomingReadings1, incomingData, sizeof(incomingReadings1));
@@ -74,7 +81,6 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   else if(incomingReadings2.key == 2) { keyString = "Fob"; }
   else { keyString = "Unknown"; }
 
-
   //serial print the data that is sent from modual 1 and 2
   Serial.printf("------------------------------------------------\n");
   Serial.printf("DISTANCE: %.2fcm\n", incomingReadings1.dist);
@@ -89,25 +95,29 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   Serial.printf("USER: %d\n", incomingReadings2.user);
   Serial.printf("KEY: %d\n", incomingReadings2.key);
   Serial.printf("------------------------------------------------\n");
-}
 
-void connectToWifi() {
-  Serial.println("Connecting to Wi-Fi");
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-
-  Serial.println("Connected to Wi-Fi");
+  mqtt_client.publish(MQTT_PUB_DIST, String(incomingReadings1.dist).c_str());
+  mqtt_client.publish(MQTT_PUB_HUMI, String(incomingReadings1.humi).c_str());
+  mqtt_client.publish(MQTT_PUB_CELC, String(incomingReadings1.celc).c_str());
+  mqtt_client.publish(MQTT_PUB_FARA, String(incomingReadings1.fara).c_str());
+  mqtt_client.publish(MQTT_PUB_LATT, String(incomingReadings1.latt).c_str());
+  mqtt_client.publish(MQTT_PUB_LONG, String(incomingReadings1.lonn).c_str());
+  mqtt_client.publish(MQTT_PUB_MOVE, String(incomingReadings1.move).c_str());
+  mqtt_client.publish(MQTT_PUB_ALAR, String(incomingReadings2.alar).c_str());
+  mqtt_client.publish(MQTT_PUB_USER, String(incomingReadings2.user).c_str());
+  mqtt_client.publish(MQTT_PUB_KEY, String(incomingReadings2.key).c_str());
 }
 
 void setup() {
   Serial.begin(115200);
 
   WiFi.mode(WIFI_STA);
-  connectToWifi();       
+  connectToWiFi();   
+  mqtt_client.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt_client.setKeepAlive(60);
+  mqtt_client.setCallback(mqttCallback);
+  connectToMQTT();    
 
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
@@ -130,4 +140,35 @@ void loop() {
     digitalWrite(BUZZ, LOW);
     delay(250);
   }
+}
+
+void connectToWiFi() {
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to WiFi");
+}
+
+void connectToMQTT() {
+  while (!mqtt_client.connected()) {
+    String client_id = "Esp32";
+    Serial.printf("Connecting to MQTT Broker\n");
+    if (mqtt_client.connect(client_id.c_str(), MQTT_USERNAME, MQTT_PASSWORD)) {
+      Serial.println("Connected to MQTT broker");
+      return;
+    } else {
+      Serial.print("Failed, rc=");
+      Serial.print(mqtt_client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void mqttCallback(char *mqtt_topic, byte *payload, unsigned int length) {
+  Serial.print("Message Receved: ");
+  Serial.println(mqtt_topic);
 }
