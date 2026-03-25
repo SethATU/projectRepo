@@ -7,21 +7,37 @@ socket.on("mqtt_message", (data) => {
     const topic = data.topic;
     const payload = parseFloat(data.payload) || data.payload;
 
+    let ALARM, MOVE, USER, KEY;
+
     switch(topic) {
         case "seth/esp32/alarm":
-            document.getElementById("alarm").innerHTML = payload;
+            if(payload == 0) { ALARM = "Disarmed"; }
+            else { ALARM = "Active"; }
+
+            document.getElementById("alarm").innerHTML = ALARM;
             break;
 
         case "seth/esp32/movement":
-            document.getElementById("movement").innerHTML = payload;
+            if(payload == 0) { MOVE = "No Movment"; }
+            else { MOVE = "Movment"; }
+
+            document.getElementById("movement").innerHTML = MOVE;
             break;
 
         case "seth/esp32/user":
-            document.getElementById("user").innerHTML = "User: " + payload;
+            if(payload == 2) { USER = "Fob"; }
+            else if(payload == 1) { USER = "Card"; }
+            else { USER = "Unknown"; }
+
+            document.getElementById("user").innerHTML = USER;
             break;
 
         case "seth/esp32/key":
-            document.getElementById("key").innerHTML = "Key: " + payload;
+            if(payload == 2) { KEY = "Seth F"; }
+            else if(payload == 1) { KEY = "Seth K"; }
+            else { KEY = "Unknown"; }
+
+            document.getElementById("key").innerHTML = KEY;
             break;
 
         default:
