@@ -8,19 +8,19 @@ socket.on("mqtt_message", (data) => {
     const payload = parseFloat(data.payload) || data.payload;
 
     switch(topic) {
-        case "esp32/alarm":
+        case "seth/esp32/alarm":
             document.getElementById("alarm").innerHTML = payload;
             break;
 
-        case "esp32/movement":
+        case "seth/esp32/movement":
             document.getElementById("movement").innerHTML = payload;
             break;
 
-        case "esp32/user":
+        case "seth/esp32/user":
             document.getElementById("user").innerHTML = "User: " + payload;
             break;
 
-        case "esp32/key":
+        case "seth/esp32/key":
             document.getElementById("key").innerHTML = "Key: " + payload;
             break;
 
