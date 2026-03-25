@@ -11,8 +11,8 @@ socket.on("mqtt_message", (data) => {
     const topic = data.topic;
     const payload = parseFloat(data.payload) || data.payload;
 
-    if (topic === "esp32/latitude") latPos = payload;
-    if (topic === "esp32/longitude") lonPos = payload;
+    if (topic === "seth/esp32/latitude") latPos = payload;
+    if (topic === "seth/esp32/longitude") lonPos = payload;
     updateMap();
 });
 

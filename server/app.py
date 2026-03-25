@@ -4,7 +4,7 @@ from flask_socketio import SocketIO
 
 #flask setup
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def home():
@@ -27,9 +27,9 @@ def stats():
     return render_template('stats.html')
 
 #mqtt config
-broker = "10.187.190.216"
+broker = "broker.emqx.io"
 port = 1883
-topic = "esp32/#"
+topic = "seth/esp32/#"
 
 #mqtt 
 def on_connect(client, userdata, flags, reasonCode, properties):
@@ -52,4 +52,4 @@ except Exception as e:
     print(f"Failed to connect to MQTT broker: {e}")
     
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0')
+    socketio.run(app, host='0.0.0.0', port=5000)
