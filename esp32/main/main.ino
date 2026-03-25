@@ -1,40 +1,21 @@
 #include <esp_now.h>
 #include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <Arduino_JSON.h>
-extern "C" {
-  #include "freertos/FreeRTOS.h"
-  #include "freertos/timers.h"
-}
-#include <AsyncMqttClient.h>
 
 #define WIFI_SSID ""
 #define WIFI_PASSWORD ""
-#define MQTT_HOST IPAddress()
-#define MQTT_PORT 1883
-#define MQTT_PUB_DIST "esp32/distance"
-#define MQTT_PUB_HUMI "esp32/humidity"
-#define MQTT_PUB_CELC "esp32/celcius"
-#define MQTT_PUB_FARA "esp32/farenheight"
-#define MQTT_PUB_LATT "esp32/latitude"
-#define MQTT_PUB_LONG "esp32/longitude"
-#define MQTT_PUB_MOVE "esp32/movement"
-#define MQTT_PUB_ALAR "esp32/alarm"
-#define MQTT_PUB_USER "esp32/user"
-#define MQTT_PUB_KEY "esp32/key"
+//#define MQTT_HOST "broker.emqx.io"
+//#define MQTT_PORT 8084
+//#define MQTT_PUB_DIST "seth/esp32/distance"
+//#define MQTT_PUB_HUMI "seth/esp32/humidity"
+//#define MQTT_PUB_CELC "seth/esp32/celcius"
+//#define MQTT_PUB_FARA "seth/esp32/farenheight"
+//#define MQTT_PUB_LATT "seth/esp32/latitude"
+//#define MQTT_PUB_LONG "seth/esp32/longitude"
+//#define MQTT_PUB_MOVE "seth/esp32/movement"
+//#define MQTT_PUB_ALAR "seth/esp32/alarm"
+//#define MQTT_PUB_USER "seth/esp32/user"
+//#define MQTT_PUB_KEY "seth/esp32/key"
 #define BUZZ 32
-
-float distance;
-float humidity;
-float celcius;
-float farenheight;
-double lattNum;
-double longNum;
-String moveString = "Error";
-String alarmString = "Error";
-String userString = "Error";
-String keyString = "Error";
 
 typedef struct struct_message1 {
   float dist;
@@ -54,9 +35,16 @@ typedef struct struct_message2 {
 } struct_message2;
 struct_message2 incomingReadings2;
 
-AsyncMqttClient mqttClient;
-TimerHandle_t mqttReconnectTimer;
-TimerHandle_t wifiReconnectTimer;
+float distance;
+float humidity;
+float celcius;
+float farenheight;
+double lattNum;
+double longNum;
+String moveString = "Error";
+String alarmString = "Error";
+String userString = "Error";
+String keyString = "Error";
 
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
   if(len == sizeof(struct_message1)) {
@@ -101,53 +89,18 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   Serial.printf("USER: %d\n", incomingReadings2.user);
   Serial.printf("KEY: %d\n", incomingReadings2.key);
   Serial.printf("------------------------------------------------\n");
-  espSendMqtt();
 }
 
 void connectToWifi() {
-  Serial.println("Connecting to Wi-Fi...");
+  Serial.println("Connecting to Wi-Fi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-}
 
-void connectToMqtt() {
-  Serial.println("Connecting to MQTT...");
-  mqttClient.connect();
-}
-
-void WiFiEvent(WiFiEvent_t event) {
-  Serial.printf("[WiFi-event] event: %d\n", event);
-  switch(event) {
-    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-      Serial.println("WiFi connected");
-      Serial.println("IP address: ");
-      Serial.println(WiFi.localIP());
-      connectToMqtt();
-      break;
-    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-      Serial.println("WiFi lost connection");
-      xTimerStop(mqttReconnectTimer, 0); 
-      xTimerStart(wifiReconnectTimer, 0);
-      break;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
   }
-}
 
-void onMqttConnect(bool sessionPresent) {
-  Serial.println("Connected to MQTT.");
-  Serial.print("Session present: ");
-  Serial.println(sessionPresent);
-}
-
-void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-  Serial.println("Disconnected from MQTT.");
-  if (WiFi.isConnected()) {
-    xTimerStart(mqttReconnectTimer, 0);
-  }
-}
-
-void onMqttPublish(uint16_t packetId) {
-  Serial.println("Publish acknowledged.");
-  Serial.print("  packetId: ");
-  Serial.println(packetId);
+  Serial.println("Connected to Wi-Fi");
 }
 
 void setup() {
@@ -160,19 +113,11 @@ void setup() {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-  
+  else {
+    Serial.println("ESP-NOW Initalised");
+  }
+
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-
-  mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
-  wifiReconnectTimer = xTimerCreate("wifiTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToWifi));
-
-  WiFi.onEvent(WiFiEvent);
-
-  mqttClient.onConnect(onMqttConnect);
-  mqttClient.onDisconnect(onMqttDisconnect);
-  mqttClient.onPublish(onMqttPublish);
-  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-  connectToWifi();
 
   pinMode(BUZZ, OUTPUT);
 }
@@ -185,17 +130,4 @@ void loop() {
     digitalWrite(BUZZ, LOW);
     delay(250);
   }
-}
-
-void espSendMqtt() {
-  uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_DIST, 1, true, String(distance).c_str());
-  uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUMI, 1, true, String(humidity).c_str());
-  uint16_t packetIdPub3 = mqttClient.publish(MQTT_PUB_CELC, 1, true, String(celcius).c_str());
-  uint16_t packetIdPub4 = mqttClient.publish(MQTT_PUB_FARA, 1, true, String(farenheight).c_str());
-  uint16_t packetIdPub5 = mqttClient.publish(MQTT_PUB_LATT, 1, true, String(lattNum, 6).c_str());
-  uint16_t packetIdPub6 = mqttClient.publish(MQTT_PUB_LONG, 1, true, String(longNum, 6).c_str());
-  uint16_t packetIdPub7 = mqttClient.publish(MQTT_PUB_MOVE, 1, true, moveString.c_str());
-  uint16_t packetIdPub8 = mqttClient.publish(MQTT_PUB_ALAR, 1, true, alarmString.c_str());
-  uint16_t packetIdPub9 = mqttClient.publish(MQTT_PUB_USER, 1, true, userString.c_str());
-  uint16_t packetIdPub10 = mqttClient.publish(MQTT_PUB_KEY, 1, true, keyString.c_str());
 }
