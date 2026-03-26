@@ -20,7 +20,7 @@ const int ECHO = 34;
 long duration;          
 float distance;    
 unsigned long previousMillis = 0;
-const long interval = 20000;  
+const long interval = 5000;  
 unsigned long previousThingspeakMillis = 0;
 const long thingspeakInterval = 20000;
 char ssid[] = SECRET_SSID;
@@ -130,12 +130,6 @@ void loop() {
     if (GPS.fix) {
       myData.latt = GPS.latitudeDegrees;
       myData.lonn = GPS.longitudeDegrees;
-
-      //remove later
-      Serial.println("Location: ");
-      Serial.print(GPS.latitudeDegrees, 6);
-      Serial.print(", ");
-      Serial.print(GPS.longitudeDegrees, 6);
     }
   }
 
@@ -144,15 +138,24 @@ void loop() {
     previousMillis = currentMillis;
     
     distanceRead();
-    Serial.println("Distance: " + String(distance) + "CM");
     tempHumRead();
     
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
     if (result == ESP_OK) {
-      Serial.println("Sent with success");
+      Serial.print("\n\nSent with success");
+      Serial.print("\nDistance: " + String(distance) + "CM");
+      Serial.print("\nLocation: ");
+      Serial.print(GPS.latitudeDegrees, 6);
+      Serial.print(", ");
+      Serial.print(GPS.longitudeDegrees, 6);
+      Serial.print("\nHumidity: " + String(myData.humi));
+      Serial.print("\nTemp C: " + String(myData.celc));
+      Serial.print("\nTemp F: " + String(myData.fara)); 
+      Serial.print("\n");
     }
     else {
-      Serial.println("Error sending the data");
+      Serial.println("\nError sending the data");
+      Serial.print("\n\n");
     }
   }
 
@@ -167,8 +170,10 @@ void loop() {
     int response = ThingSpeak.writeFields(SECRET_CH_ID, SECRET_WRITE_APIKEY);
     if(response == 200){
         Serial.println("ThingSpeak update successful.");
+        Serial.print("\n\n");
     }else{
         Serial.println("Problem updating ThingSpeak. HTTP error code " + String(response));
+        Serial.print("\n\n");
     }
   }
 }

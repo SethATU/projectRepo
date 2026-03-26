@@ -60,27 +60,6 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
     memcpy(&incomingReadings2, incomingData, sizeof(incomingReadings2));
   }
 
-  distance = incomingReadings1.dist;
-  humidity = incomingReadings1.humi;
-  celcius = incomingReadings1.celc;
-  farenheight = incomingReadings1.fara;
-  lattNum = incomingReadings1.latt;
-  longNum = incomingReadings1.lonn;
-
-  if(incomingReadings1.move == 1) { moveString = "Movement";}
-  else { moveString = "No Movement"; }
-
-  if(incomingReadings2.alar == 0) { alarmString = "Disarmed"; }
-  else { alarmString = "Active"; }
-
-  if(incomingReadings2.user == 1) { userString = "Seth K"; }
-  else if(incomingReadings2.user == 2) { userString = "Seth F"; }
-  else { userString = "Unknown"; }
-
-  if(incomingReadings2.key == 1) { keyString = "Card"; }
-  else if(incomingReadings2.key == 2) { keyString = "Fob"; }
-  else { keyString = "Unknown"; }
-
   //serial print the data that is sent from modual 1 and 2
   Serial.printf("------------------------------------------------\n");
   Serial.printf("DISTANCE: %.2fcm\n", incomingReadings1.dist);
@@ -133,6 +112,8 @@ void setup() {
 }
 
 void loop() {
+  mqtt_client.loop();
+  
   if(incomingReadings1.move == 1 && incomingReadings2.alar == 1) {
     alarmString = "Alert";
     digitalWrite(BUZZ, HIGH);
