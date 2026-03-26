@@ -50,7 +50,7 @@ H1 {
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
-    margin-top: 25px;
+    margin-top: 125px;
     border: 5px solid lime;
     border-radius: 25px;
     background-color: black;
@@ -68,7 +68,7 @@ H1 {
 
 .stat {
     margin-bottom: 30px;
-    min-width: 450px; 
-    min-height: 260px;
+    width: 375px; 
+    height: 260px;
     border: 5px solid lime;
 }
