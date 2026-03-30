@@ -60,7 +60,7 @@ p {
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
-    margin-top: 25px;
+    margin-top: 125px;
     border: 5px solid lime;
     border-radius: 25px;
     background-color: black;
@@ -87,17 +87,4 @@ p {
 
 .item:hover {
     transform: translateY(-10px); 
-}
-
-.cam iframe{
-    display: flex;
-    flex-wrap: wrap;
-    justify-self: center;
-    align-self: center;
-    width: 320px;
-    height: 240px;
-    transform: scaleY(-1);
-    border: 5px solid lime;
-    padding: 1px;
-    margin-bottom: 50px;
 }
