@@ -2,14 +2,17 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+//wif setup
 #define WIFI_SSID "Backup"
 #define WIFI_PASSWORD "nonono12345"
+//buzzer gpio pin 
 #define BUZZ 32
-#define MQTT_HOST "broker.emqx.io"
-#define MQTT_PORT 1883
-#define MQTT_USERNAME "emqx"
-#define MQTT_PASSWORD "public"
-
+//public mqtt setup 
+#define MQTT_HOST "broker.emqx.io"  //address
+#define MQTT_PORT 1883  //port (unencripted)
+#define MQTT_USERNAME "emqx"  //username
+#define MQTT_PASSWORD "public"//password 
+//mqtt tpoics 
 #define MQTT_PUB_DIST "seth/esp32/distance"
 #define MQTT_PUB_HUMI "seth/esp32/humidity"
 #define MQTT_PUB_CELC "seth/esp32/celcius"
@@ -21,6 +24,7 @@
 #define MQTT_PUB_USER "seth/esp32/user"
 #define MQTT_PUB_KEY "seth/esp32/key"
 
+//struct of data from esp-sensor 
 typedef struct struct_message1 {
   float dist;
   float humi;
@@ -32,6 +36,7 @@ typedef struct struct_message1 {
 } struct_message1;
 struct_message1 incomingReadings1;
 
+//struct of data from esp-keypad
 typedef struct struct_message2 {
   int alar;
   int user;
@@ -49,10 +54,11 @@ String moveString = "Error";
 String alarmString = "Error";
 String userString = "Error";
 String keyString = "Error";
-
+//mqtt protocal
 WiFiClient espClient;
 PubSubClient mqtt_client(espClient);
 
+//receve data from esps 
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
   if(len == sizeof(struct_message1)) {
     memcpy(&incomingReadings1, incomingData, sizeof(incomingReadings1));
@@ -75,7 +81,7 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   Serial.printf("KEY: %d\n", incomingReadings2.key);
   Serial.printf("------------------------------------------------\n");
 
-
+  //publish each data to mqtt to the tpoics  
   mqtt_client.publish(MQTT_PUB_DIST, String(incomingReadings1.dist).c_str());
   mqtt_client.publish(MQTT_PUB_HUMI, String(incomingReadings1.humi).c_str());
   mqtt_client.publish(MQTT_PUB_CELC, String(incomingReadings1.celc).c_str());
@@ -92,12 +98,15 @@ void setup() {
   Serial.begin(115200);
 
   WiFi.mode(WIFI_STA);
-  connectToWiFi();   
-  mqtt_client.setServer(MQTT_HOST, MQTT_PORT);
-  mqtt_client.setKeepAlive(60);
-  mqtt_client.setCallback(mqttCallback);
-  connectToMQTT();    
+  connectToWiFi();  //cant continue till wifi is connected 
 
+  //connect to mqtt 
+  mqtt_client.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt_client.setKeepAlive(60); //keep alive for 60 seconds 
+  mqtt_client.setCallback(mqttCallback);
+  connectToMQTT(); //cant contine unitll mqtt is connected 
+
+  //esp now init 
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
@@ -112,8 +121,8 @@ void setup() {
 }
 
 void loop() {
-  mqtt_client.loop();
-  
+  mqtt_client.loop(); //loop to keep mqtt alive 
+  //if alarm active and the code was incorrect then buzzer will sound off 
   if(incomingReadings1.move == 1 && incomingReadings2.alar == 1) {
     alarmString = "Alert";
     digitalWrite(BUZZ, HIGH);
@@ -123,6 +132,7 @@ void loop() {
   }
 }
 
+//conect to wifi 
 void connectToWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
@@ -133,6 +143,7 @@ void connectToWiFi() {
   Serial.println("\nConnected to WiFi");
 }
 
+//connect to mqtt 
 void connectToMQTT() {
   while (!mqtt_client.connected()) {
     String client_id = "Esp32";
@@ -149,6 +160,7 @@ void connectToMQTT() {
   }
 }
 
+//sees if the data has been sent and receved 
 void mqttCallback(char *mqtt_topic, byte *payload, unsigned int length) {
   Serial.print("Message Receved: ");
   Serial.println(mqtt_topic);
